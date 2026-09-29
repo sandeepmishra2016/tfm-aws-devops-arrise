@@ -7,9 +7,9 @@ data "aws_iam_policy_document" "ci" {
   }
 
   statement {
-    sid    = "PushToNamedECRRepository"
-    effect = "Allow"
-    actions = local.ecr_push_actions
+    sid       = "PushToNamedECRRepository"
+    effect    = "Allow"
+    actions   = local.ecr_push_actions
     resources = [local.ecr_repository_arn]
   }
 
@@ -24,9 +24,9 @@ data "aws_iam_policy_document" "ci" {
   }
 
   statement {
-    sid    = "DeployOnlyNamedECSService"
-    effect = "Allow"
-    actions = local.ecs_service_actions
+    sid       = "DeployOnlyNamedECSService"
+    effect    = "Allow"
+    actions   = local.ecs_service_actions
     resources = [local.ecs_service_arn]
   }
 
