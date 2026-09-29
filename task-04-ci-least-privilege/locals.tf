@@ -5,5 +5,22 @@ locals {
   task_role_arn       = "arn:aws:iam::${var.aws_account_id}:role/${var.ecs_task_role_name}"
   execution_role_arn  = "arn:aws:iam::${var.aws_account_id}:role/${var.ecs_execution_role_name}"
   artifact_bucket_arn = "arn:aws:s3:::${var.artifact_bucket_name}"
-}
 
+  ecr_push_actions = [
+    "ecr:BatchCheckLayerAvailability",
+    "ecr:CompleteLayerUpload",
+    "ecr:InitiateLayerUpload",
+    "ecr:PutImage",
+    "ecr:UploadLayerPart"
+  ]
+
+  ecs_service_actions = [
+    "ecs:DescribeServices",
+    "ecs:UpdateService"
+  ]
+
+  artifact_read_actions = [
+    "s3:GetObject",
+    "s3:GetObjectVersion"
+  ]
+}

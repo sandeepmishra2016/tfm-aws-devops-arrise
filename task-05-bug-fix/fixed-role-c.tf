@@ -40,8 +40,8 @@ resource "aws_iam_role_policy" "role_c_s3" {
   policy = data.aws_iam_policy_document.role_c_s3.json
 }
 
-# This is the identity policy required on roleB in Account A. It is rendered
-# here for review; deploy it using the Account A provider/configuration.
+# This identity policy belongs on roleB in Account A. This task renders the
+# document only; deployment requires the Account A provider configuration.
 data "aws_iam_policy_document" "role_b_assume_role_c" {
   statement {
     sid       = "AssumeOnlyRoleC"
@@ -50,4 +50,3 @@ data "aws_iam_policy_document" "role_b_assume_role_c" {
     resources = [local.role_c_arn]
   }
 }
-

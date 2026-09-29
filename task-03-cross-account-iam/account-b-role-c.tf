@@ -26,10 +26,7 @@ data "aws_iam_policy_document" "role_c_s3" {
     sid     = "FullAccessToNamedBucketOnly"
     effect  = "Allow"
     actions = ["s3:*"]
-    resources = [
-      local.bucket_arn,
-      "${local.bucket_arn}/*"
-    ]
+    resources = local.role_c_s3_resources
   }
 }
 

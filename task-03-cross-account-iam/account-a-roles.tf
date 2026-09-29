@@ -101,7 +101,7 @@ data "aws_iam_policy_document" "role_b_permissions" {
   statement {
     sid       = "AssumeOnlyRoleC"
     effect    = "Allow"
-    actions   = ["sts:AssumeRole"]
+    actions   = local.role_b_actions
     resources = [local.role_c_arn]
   }
 }

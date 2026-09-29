@@ -50,4 +50,17 @@ run "plan_exact_cross_account_boundary" {
     condition     = local.bucket_arn == "arn:aws:s3:::replace-with-account-b-bucket"
     error_message = "roleC S3 access must be anchored to one named bucket ARN."
   }
+
+  assert {
+    condition     = local.role_b_actions == ["sts:AssumeRole"]
+    error_message = "roleB must not receive permissions beyond assuming roleC."
+  }
+
+  assert {
+    condition = toset(local.role_c_s3_resources) == toset([
+      "arn:aws:s3:::replace-with-account-b-bucket",
+      "arn:aws:s3:::replace-with-account-b-bucket/*"
+    ])
+    error_message = "roleC S3 access must include only the named bucket and its objects."
+  }
 }

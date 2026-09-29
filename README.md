@@ -1,53 +1,30 @@
 # ARRISE DevOps Assignment
 
-This repository contains my solution to the five-part DevOps assignment. I organized it by task because the reviewer should be able to open one folder, compare the requirement with the implementation, and validate it without tracing files across an oversized Terraform codebase.
+My solution is split by task so each part can be reviewed and tested independently.
 
-The code is deliberately conservative. It uses stable Terraform keys, encrypted storage, exact IAM principals, narrowly scoped permissions, and no committed credentials or state. Where the assignment conflicts with Terraform behavior or leaves an authorization decision unspecified, I call that out rather than hiding it behind code.
+| Task | Implementation | Main decision |
+|---|---|---|
+| 1 | [`task-01-ec2-fleet`](task-01-ec2-fleet/) | Use stable `for_each` keys and isolate the one instance that needs `prevent_destroy` |
+| 2 | [`task-02-remote-state`](task-02-remote-state/) | Bootstrap S3 and DynamoDB before configuring the backend |
+| 3 | [`task-03-cross-account-iam`](task-03-cross-account-iam/) | Trust roleB's ARN directly instead of trusting the whole source account |
+| 4 | [`task-04-ci-least-privilege`](task-04-ci-least-privilege/) | Build the CI policy from required API calls and scope each resource where AWS permits it |
+| 5 | [`task-05-bug-fix`](task-05-bug-fix/) | Correct both sides of the roleB-to-roleC authorization path |
 
-## Reviewer Index
-
-| Task | Area | Implementation | Validation |
-|---|---|---|---|
-| 1 | Variable-driven EC2 fleet | [`task-01-ec2-fleet`](task-01-ec2-fleet/) | `make validate-task-1` |
-| 2 | Remote state and locking | [`task-02-remote-state`](task-02-remote-state/) | `make validate-task-2` |
-| 3 | Cross-account IAM | [`task-03-cross-account-iam`](task-03-cross-account-iam/) | `make validate-task-3` |
-| 4 | Least-privilege CI policy | [`task-04-ci-least-privilege`](task-04-ci-least-privilege/) | `make validate-task-4` |
-| 5 | Trust and permission bug fix | [`task-05-bug-fix`](task-05-bug-fix/) | `make validate-task-5` |
-
-## Design Summary
+## Repository Layout
 
 ```text
-Task 1                         Task 2
-One instance input map        Bootstrap state infrastructure once
-  -> filtered for_each          -> encrypted/versioned S3 bucket
-  -> four standard EC2          -> DynamoDB lock table
-  -> one protected EC2          -> backend consumed by main stacks
-
-Task 3
-Account A principal
-  -> assumes roleB
-  -> roleB may only call sts:AssumeRole on roleC
-  -> Account B roleC trusts roleB's exact ARN
-  -> roleC can operate only on the named S3 bucket
-
-Task 4
-CI identity
-  -> authenticate and push to one ECR repository
-  -> register a task definition and update one ECS service
-  -> pass only the approved ECS task roles
-  -> read only from one artifact bucket
+task-01-ec2-fleet/          EC2 fleet driven by one typed input map
+task-02-remote-state/       S3 state bucket and DynamoDB locking
+task-03-cross-account-iam/  IAM users, groups and cross-account roles
+task-04-ci-least-privilege/ ECR, ECS and S3 permissions for CI
+task-05-bug-fix/            Corrected trust and S3 policies
 ```
+
+[`ASSUMPTIONS.md`](ASSUMPTIONS.md) records the inputs that were unclear or outside the assignment. [`NOTES.md`](NOTES.md) explains the decisions that are easy to miss by reading Terraform alone.
 
 ## Validation
 
-Prerequisites:
-
-- Terraform 1.5 or later
-- AWS provider download access
-- `make`
-- Optional: TFLint
-
-Run all static checks without deploying AWS resources:
+The repository is checked with Terraform 1.10.5 in GitHub Actions. The workflow runs formatting, initialization, validation and mocked Terraform tests for each task.
 
 ```bash
 make fmt-check
@@ -55,44 +32,33 @@ make validate
 make test
 ```
 
-Optional linting:
+The latest recorded result and the limits of the mocked tests are in [`VALIDATION.md`](VALIDATION.md).
 
-```bash
-make lint
-```
+## Applying in AWS
 
-No AWS credentials are required for these checks. The Terraform tests use mocked AWS providers to exercise plans and assertions without creating resources. A real plan or apply requires authorized sandbox accounts and environment-specific variable values.
+The examples contain placeholder account IDs and resource names. A sandbox deployment would use this order:
 
-## Deployment Order
+1. Apply `task-02-remote-state/bootstrap`.
+2. Put the output values in an uncommitted `backend.hcl`.
+3. Run `terraform init -backend-config=backend.hcl` for the state-consuming stack.
+4. Apply Task 1 with existing subnet, security-group, AMI and key-pair IDs.
+5. Run Task 3 with independently authorized sessions for Accounts A and B.
+6. Apply Task 4 only after its ECR repository, ECS service, task roles and artifact bucket exist.
 
-If this were deployed in a sandbox:
+Task 5 is the isolated correction requested in the assignment; Task 3 contains the same corrected relationship in the complete IAM model.
 
-1. Apply `task-02-remote-state/bootstrap` once.
-2. Copy the resulting bucket and table names into a backend configuration file that is not committed.
-3. Initialize the state-consuming stack with `terraform init -backend-config=backend.hcl`.
-4. Apply Task 1 in the workload account.
-5. Apply Account A and Account B portions of Task 3 using separately authorized provider sessions.
-6. Apply Task 4 only after the target ECR repository, ECS service, task roles, and artifact bucket exist.
+## Security Choices
 
-Task 5 is a focused correction of the supplied broken snippet and intentionally overlaps with the final Task 3 design.
+- EC2 instances are private, root volumes are encrypted, and IMDSv2 is required.
+- State storage has encryption, versioning, public-access blocking and a TLS-only bucket policy.
+- Cross-account access trusts a named role ARN.
+- CI can pass only the two approved ECS roles and access only the named ECR, ECS and S3 resources.
+- Long-lived IAM credentials are disabled unless explicitly enabled with PGP encryption.
+- State, plans, credentials and populated variable files are excluded from Git.
 
-## Security Boundaries
+## References
 
-- No state files, plans, credentials, private keys, or populated variable files are committed.
-- EC2 instances have encrypted root volumes, IMDSv2 enforcement, and no public IP by default.
-- Terraform state is encrypted, versioned, blocked from public access, and protected against non-TLS requests.
-- Cross-account trust names the exact role ARN rather than trusting the whole source account.
-- CI permissions are separated by capability and scoped to specific resource ARNs whenever AWS supports resource-level authorization.
-- Legacy IAM credentials are disabled by default. An opt-in, PGP-encrypted example is included only to represent the assignment's requested access modes.
-
-## Additional Notes
-
-- [`NOTES.md`](NOTES.md) answers the written questions from the assignment.
-- [`ASSUMPTIONS.md`](ASSUMPTIONS.md) records decisions for requirements that are not fully specified.
-
-## Official References
-
-- [Terraform lifecycle meta-argument](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle)
+- [Terraform lifecycle](https://developer.hashicorp.com/terraform/language/meta-arguments/lifecycle)
 - [Terraform S3 backend](https://developer.hashicorp.com/terraform/language/backend/s3)
 - [AWS cross-account IAM roles](https://docs.aws.amazon.com/IAM/latest/UserGuide/tutorial_cross-account-with-roles.html)
-- [Amazon ECR repository policies and IAM permissions](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push-iam.html)
+- [Amazon ECR push permissions](https://docs.aws.amazon.com/AmazonECR/latest/userguide/image-push-iam.html)

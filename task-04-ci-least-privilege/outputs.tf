@@ -4,7 +4,6 @@ output "ci_policy_arn" {
 }
 
 output "ci_policy_json" {
-  description = "Rendered policy JSON for reviewer inspection."
+  description = "Rendered CI policy JSON."
   value       = data.aws_iam_policy_document.ci.json
 }
-

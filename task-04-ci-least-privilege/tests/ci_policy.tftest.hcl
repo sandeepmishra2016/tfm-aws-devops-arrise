@@ -30,6 +30,27 @@ run "plan_scoped_ci_policy" {
   }
 
   assert {
+    condition = toset(local.ecr_push_actions) == toset([
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:CompleteLayerUpload",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart"
+    ])
+    error_message = "ECR permissions must contain only the image-push API calls."
+  }
+
+  assert {
+    condition     = toset(local.ecs_service_actions) == toset(["ecs:DescribeServices", "ecs:UpdateService"])
+    error_message = "ECS service permissions must not include service deletion or creation."
+  }
+
+  assert {
+    condition     = toset(local.artifact_read_actions) == toset(["s3:GetObject", "s3:GetObjectVersion"])
+    error_message = "Artifact object access must remain read-only."
+  }
+
+  assert {
     condition = toset([
       local.task_role_arn,
       local.execution_role_arn

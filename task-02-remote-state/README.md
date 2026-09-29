@@ -1,24 +1,18 @@
-# Task 2 Remote State and Locking
+# Task 2: Remote State
 
-## Approach
+This directory is split into two pieces:
 
-Backend resources must exist before Terraform can use them, so this task has a small bootstrap stack. It creates an encrypted and versioned S3 bucket, blocks public access, denies non-TLS requests, and creates the requested DynamoDB lock table.
+- `bootstrap/` creates the state bucket and lock table.
+- `backend.tf.example` and `backend.hcl.example` show how another stack consumes them.
 
-After bootstrap, `backend.tf.example` and `backend.hcl.example` show how another stack consumes the backend without committing real environment values.
+Bootstrapping is separate because a backend cannot use an S3 bucket before that bucket exists. The bucket is encrypted, versioned, blocked from public access and protected by a TLS-only policy. DynamoDB uses on-demand billing because lock traffic is small and irregular.
 
-## Why Local State Is Unsafe for a Team
-
-Two engineers using local state have separate views and no shared lock. Both can plan from stale information and race to change the same resources. Remote state gives the team one authoritative object; locking ensures only one state-changing operation proceeds at a time.
-
-Locking protects concurrency. S3 versioning provides recovery from accidental state replacement. They solve different problems, so both are enabled.
-
-## Validate
+S3 versioning and locking solve different failures. Versioning can recover an overwritten state object; locking prevents two writers from changing the same state concurrently.
 
 ```bash
 terraform -chdir=bootstrap init -backend=false
-terraform -chdir=bootstrap fmt -check
 terraform -chdir=bootstrap validate
+terraform -chdir=bootstrap test
 ```
 
-The assignment explicitly requests DynamoDB locking. It is implemented here even though newer Terraform versions prefer S3 native lockfiles with `use_lockfile = true`.
-
+DynamoDB locking is retained because it is part of the assignment. For a new backend on a compatible Terraform release, I would assess S3 native locking with `use_lockfile = true`.

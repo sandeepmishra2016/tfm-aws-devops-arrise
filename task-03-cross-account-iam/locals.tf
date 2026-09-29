@@ -6,5 +6,10 @@ locals {
   role_b_arn = "arn:aws:iam::${var.account_a_id}:role/${var.role_b_name}"
   role_c_arn = "arn:aws:iam::${var.account_b_id}:role/${var.role_c_name}"
   bucket_arn = "arn:aws:s3:::${var.account_b_bucket_name}"
-}
 
+  role_b_actions = ["sts:AssumeRole"]
+  role_c_s3_resources = [
+    local.bucket_arn,
+    "${local.bucket_arn}/*"
+  ]
+}

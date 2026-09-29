@@ -9,13 +9,7 @@ data "aws_iam_policy_document" "ci" {
   statement {
     sid    = "PushToNamedECRRepository"
     effect = "Allow"
-    actions = [
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:CompleteLayerUpload",
-      "ecr:InitiateLayerUpload",
-      "ecr:PutImage",
-      "ecr:UploadLayerPart"
-    ]
+    actions = local.ecr_push_actions
     resources = [local.ecr_repository_arn]
   }
 
@@ -32,10 +26,7 @@ data "aws_iam_policy_document" "ci" {
   statement {
     sid    = "DeployOnlyNamedECSService"
     effect = "Allow"
-    actions = [
-      "ecs:DescribeServices",
-      "ecs:UpdateService"
-    ]
+    actions = local.ecs_service_actions
     resources = [local.ecs_service_arn]
   }
 
@@ -72,7 +63,7 @@ data "aws_iam_policy_document" "ci" {
   statement {
     sid       = "ReadArtifacts"
     effect    = "Allow"
-    actions   = ["s3:GetObject", "s3:GetObjectVersion"]
+    actions   = local.artifact_read_actions
     resources = ["${local.artifact_bucket_arn}/*"]
   }
 }
@@ -89,4 +80,3 @@ resource "aws_iam_user_policy_attachment" "ci" {
   user       = var.ci_user_name
   policy_arn = aws_iam_policy.ci.arn
 }
-
