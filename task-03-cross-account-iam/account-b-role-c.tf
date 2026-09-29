@@ -23,10 +23,13 @@ data "aws_iam_policy_document" "role_c_s3" {
   provider = aws.account_b
 
   statement {
-    sid       = "FullAccessToNamedBucketOnly"
-    effect    = "Allow"
-    actions   = ["s3:*"]
-    resources = local.role_c_s3_resources
+    sid     = "FullAccessToNamedBucketOnly"
+    effect  = "Allow"
+    actions = ["s3:*"]
+    resources = [
+      local.bucket_arn,
+      "${local.bucket_arn}/*"
+    ]
   }
 }
 

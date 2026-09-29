@@ -29,21 +29,3 @@ resource "aws_iam_group_membership" "group2" {
   group    = aws_iam_group.group2.name
   users    = [for user_name in sort(tolist(local.console_user_names)) : aws_iam_user.users[user_name].name]
 }
-
-resource "aws_iam_access_key" "legacy" {
-  provider = aws.account_a
-  for_each = var.create_legacy_credentials ? local.all_user_names : toset([])
-
-  user    = aws_iam_user.users[each.key].name
-  pgp_key = var.user_pgp_keys[each.key]
-}
-
-resource "aws_iam_user_login_profile" "legacy_console" {
-  provider = aws.account_a
-  for_each = var.create_legacy_credentials ? local.console_user_names : toset([])
-
-  user                    = aws_iam_user.users[each.key].name
-  pgp_key                 = var.user_pgp_keys[each.key]
-  password_reset_required = true
-}
-

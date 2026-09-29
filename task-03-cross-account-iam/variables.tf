@@ -61,26 +61,3 @@ variable "account_b_bucket_name" {
   type        = string
   default     = "replace-with-account-b-bucket"
 }
-
-variable "create_legacy_credentials" {
-  description = "Opt-in creation of PGP-encrypted IAM access keys and console passwords."
-  type        = bool
-  default     = false
-}
-
-variable "user_pgp_keys" {
-  description = "Map of IAM user names to PGP public keys or keybase references. Required when legacy credentials are enabled."
-  type        = map(string)
-  default     = {}
-  sensitive   = true
-}
-
-check "legacy_credentials_have_pgp_keys" {
-  assert {
-    condition = !var.create_legacy_credentials || alltrue([
-      for user_name in local.all_user_names : contains(keys(var.user_pgp_keys), user_name)
-    ])
-    error_message = "Every IAM user must have a PGP key when create_legacy_credentials is true."
-  }
-}
-

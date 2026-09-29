@@ -4,11 +4,3 @@ account_b_id           = "111111111111"
 account_a_profile      = "account-a-admin"
 account_b_profile      = "account-b-admin"
 account_b_bucket_name  = "replace-with-account-b-bucket"
-
-# Secure default. In production, prefer SSO/OIDC and leave this false.
-create_legacy_credentials = false
-
-# If legacy credentials are explicitly required, enable the flag and provide
-# one PGP key per user, for example "keybase:approved-user".
-user_pgp_keys = {}
-

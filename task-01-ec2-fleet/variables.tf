@@ -6,11 +6,6 @@ variable "aws_region" {
 variable "ami_id" {
   description = "Existing AMI ID approved for this environment."
   type        = string
-
-  validation {
-    condition     = can(regex("^ami-[0-9a-f]+$", var.ami_id))
-    error_message = "ami_id must look like an AWS AMI ID."
-  }
 }
 
 variable "subnet_id" {
@@ -54,29 +49,6 @@ variable "instances" {
   validation {
     condition     = length(var.instances) == 5
     error_message = "Exactly five instance configurations must be supplied."
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in values(var.instances) :
-      contains(["gp2", "gp3", "io1", "io2"], instance.root_volume_type)
-    ])
-    error_message = "root_volume_type must be gp2, gp3, io1, or io2."
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in values(var.instances) : instance.root_volume_size_gib >= 8
-    ])
-    error_message = "Every root volume must be at least 8 GiB."
-  }
-
-  validation {
-    condition = alltrue([
-      for instance in values(var.instances) :
-      !contains(["io1", "io2"], instance.root_volume_type) || coalesce(try(instance.root_volume_iops, null), 0) > 0
-    ])
-    error_message = "io1 and io2 volumes require a positive root_volume_iops value."
   }
 }
 

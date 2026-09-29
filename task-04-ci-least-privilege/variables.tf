@@ -50,16 +50,3 @@ variable "artifact_bucket_name" {
   type        = string
   default     = "replace-with-build-artifact-bucket"
 }
-
-variable "attach_to_ci_user" {
-  description = "Attach the policy to an existing IAM user named ci. Disabled for independent review."
-  type        = bool
-  default     = false
-}
-
-variable "ci_user_name" {
-  description = "Existing CI user used only when attach_to_ci_user is true."
-  type        = string
-  default     = "ci"
-}
-

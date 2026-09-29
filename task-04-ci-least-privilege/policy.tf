@@ -7,9 +7,15 @@ data "aws_iam_policy_document" "ci" {
   }
 
   statement {
-    sid       = "PushToNamedECRRepository"
-    effect    = "Allow"
-    actions   = local.ecr_push_actions
+    sid    = "PushToNamedECRRepository"
+    effect = "Allow"
+    actions = [
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:CompleteLayerUpload",
+      "ecr:InitiateLayerUpload",
+      "ecr:PutImage",
+      "ecr:UploadLayerPart"
+    ]
     resources = [local.ecr_repository_arn]
   }
 
@@ -24,9 +30,12 @@ data "aws_iam_policy_document" "ci" {
   }
 
   statement {
-    sid       = "DeployOnlyNamedECSService"
-    effect    = "Allow"
-    actions   = local.ecs_service_actions
+    sid    = "DeployOnlyNamedECSService"
+    effect = "Allow"
+    actions = [
+      "ecs:DescribeServices",
+      "ecs:UpdateService"
+    ]
     resources = [local.ecs_service_arn]
   }
 
@@ -61,9 +70,12 @@ data "aws_iam_policy_document" "ci" {
   }
 
   statement {
-    sid       = "ReadArtifacts"
-    effect    = "Allow"
-    actions   = local.artifact_read_actions
+    sid    = "ReadArtifacts"
+    effect = "Allow"
+    actions = [
+      "s3:GetObject",
+      "s3:GetObjectVersion"
+    ]
     resources = ["${local.artifact_bucket_arn}/*"]
   }
 }
@@ -72,11 +84,4 @@ resource "aws_iam_policy" "ci" {
   name        = "arrise-ci-deployment"
   description = "Least-privilege ECR push, ECS deploy, and S3 artifact-read policy."
   policy      = data.aws_iam_policy_document.ci.json
-}
-
-resource "aws_iam_user_policy_attachment" "ci" {
-  count = var.attach_to_ci_user ? 1 : 0
-
-  user       = var.ci_user_name
-  policy_arn = aws_iam_policy.ci.arn
 }
