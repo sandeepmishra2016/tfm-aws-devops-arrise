@@ -10,6 +10,8 @@ This repository contains one small Terraform root for each assignment task. I ke
 | 4 | [`task-04-ci-least-privilege`](task-04-ci-least-privilege/) | CI permissions are scoped to one ECR repository, ECS service, artifact bucket and two task roles |
 | 5 | [`task-05-bug-fix`](task-05-bug-fix/) | Replace the incorrect user ARN with roleB's role ARN and limit S3 access to the named bucket |
 
+The reasoning and trade-offs behind each implementation are documented in [`SOLUTION.md`](SOLUTION.md).
+
 ## Validate
 
 Terraform 1.10.5 is used in CI. The workflow runs formatting and `terraform validate` for all five roots without AWS credentials.
