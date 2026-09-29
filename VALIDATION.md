@@ -2,7 +2,7 @@
 
 ## Automated result
 
-GitHub Actions run [#1](https://github.com/sandeepmishra2016/tfm-aws-devops-arrise/actions/runs/36523689561) completed successfully on 29 September 2026 using Terraform 1.10.5.
+GitHub Actions run [`36527343963`](https://github.com/sandeepmishra2016/tfm-aws-devops-arrise/actions/runs/36527343963) completed successfully on 29 September 2026 using Terraform 1.10.5.
 
 For every task, the workflow ran:
 
