@@ -1,0 +1,12 @@
+provider "aws" {
+  region = var.aws_region
+
+  default_tags {
+    tags = {
+      ManagedBy = "Terraform"
+      Project   = "arrise-devops-assignment"
+      Purpose   = "terraform-state"
+    }
+  }
+}
+

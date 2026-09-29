@@ -1,0 +1,65 @@
+name: Terraform validation
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Terraform format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Check formatting
+        run: terraform fmt -check -recursive
+
+  validate:
+    name: Validate ${{ matrix.task }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task: task-01-ec2-fleet
+            directory: task-01-ec2-fleet
+          - task: task-02-remote-state
+            directory: task-02-remote-state/bootstrap
+          - task: task-03-cross-account-iam
+            directory: task-03-cross-account-iam
+          - task: task-04-ci-least-privilege
+            directory: task-04-ci-least-privilege
+          - task: task-05-bug-fix
+            directory: task-05-bug-fix
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.10.5
+
+      - name: Initialize without backend
+        working-directory: ${{ matrix.directory }}
+        run: terraform init -backend=false -input=false
+
+      - name: Validate
+        working-directory: ${{ matrix.directory }}
+        run: terraform validate -no-color
+
+      - name: Test with mocked AWS provider
+        working-directory: ${{ matrix.directory }}
+        run: terraform test -no-color
+

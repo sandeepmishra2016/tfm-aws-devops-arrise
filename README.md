@@ -1,4 +1,4 @@
-# ARRISE DevOps 
+# ARRISE DevOps Assignment
 
 This repository contains my solution to the five-part DevOps assignment. I organized it by task because the reviewer should be able to open one folder, compare the requirement with the implementation, and validate it without tracing files across an oversized Terraform codebase.
 

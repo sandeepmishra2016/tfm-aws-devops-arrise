@@ -1,0 +1,53 @@
+aws_region        = "ap-south-1"
+ami_id            = "ami-0123456789abcdef0"
+subnet_id         = "subnet-0123456789abcdef0"
+security_group_ids = ["sg-0123456789abcdef0"]
+environment       = "dev"
+owner             = "platform-engineering"
+
+protected_instance_name = "management"
+
+instances = {
+  web = {
+    instance_type        = "t3.small"
+    root_volume_type     = "gp3"
+    root_volume_size_gib = 20
+    root_volume_iops     = 3000
+    root_volume_throughput = 125
+    key_name             = "web-dev"
+  }
+
+  api = {
+    instance_type        = "t3.medium"
+    root_volume_type     = "gp3"
+    root_volume_size_gib = 30
+    root_volume_iops     = 3000
+    root_volume_throughput = 125
+    key_name             = "api-dev"
+  }
+
+  worker = {
+    instance_type        = "c6i.large"
+    root_volume_type     = "gp2"
+    root_volume_size_gib = 40
+    key_name             = "worker-dev"
+  }
+
+  database = {
+    instance_type        = "m6i.large"
+    root_volume_type     = "io2"
+    root_volume_size_gib = 100
+    root_volume_iops     = 5000
+    key_name             = "database-dev"
+  }
+
+  management = {
+    instance_type        = "t3.micro"
+    root_volume_type     = "gp3"
+    root_volume_size_gib = 16
+    root_volume_iops     = 3000
+    root_volume_throughput = 125
+    key_name             = "management-dev"
+  }
+}
+

@@ -1,0 +1,68 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "AuthenticateToECR",
+      "Effect": "Allow",
+      "Action": "ecr:GetAuthorizationToken",
+      "Resource": "*"
+    },
+    {
+      "Sid": "PushToNamedECRRepository",
+      "Effect": "Allow",
+      "Action": [
+        "ecr:BatchCheckLayerAvailability",
+        "ecr:CompleteLayerUpload",
+        "ecr:InitiateLayerUpload",
+        "ecr:PutImage",
+        "ecr:UploadLayerPart"
+      ],
+      "Resource": "arn:aws:ecr:ap-south-1:000000000000:repository/arrise-application"
+    },
+    {
+      "Sid": "RegisterAndInspectTaskDefinitions",
+      "Effect": "Allow",
+      "Action": ["ecs:DescribeTaskDefinition", "ecs:RegisterTaskDefinition"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "DeployOnlyNamedECSService",
+      "Effect": "Allow",
+      "Action": ["ecs:DescribeServices", "ecs:UpdateService"],
+      "Resource": "arn:aws:ecs:ap-south-1:000000000000:service/arrise-cluster/arrise-service"
+    },
+    {
+      "Sid": "InspectNamedECSCluster",
+      "Effect": "Allow",
+      "Action": "ecs:DescribeClusters",
+      "Resource": "arn:aws:ecs:ap-south-1:000000000000:cluster/arrise-cluster"
+    },
+    {
+      "Sid": "PassOnlyApprovedECSTaskRoles",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": [
+        "arn:aws:iam::000000000000:role/arrise-ecs-task-role",
+        "arn:aws:iam::000000000000:role/arrise-ecs-execution-role"
+      ],
+      "Condition": {
+        "StringEquals": {
+          "iam:PassedToService": "ecs-tasks.amazonaws.com"
+        }
+      }
+    },
+    {
+      "Sid": "ListArtifactBucket",
+      "Effect": "Allow",
+      "Action": "s3:ListBucket",
+      "Resource": "arn:aws:s3:::replace-with-build-artifact-bucket"
+    },
+    {
+      "Sid": "ReadArtifacts",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:GetObjectVersion"],
+      "Resource": "arn:aws:s3:::replace-with-build-artifact-bucket/*"
+    }
+  ]
+}
+
